@@ -95,7 +95,38 @@ class GoogleWTS(metaclass=ABCMeta):
         self.cache = set({})
         self._load_cache()
 
-    def image_for_domain(self, target_domain, target_z):
+    def image_for_domain(self, target_domain, target_z, fill_value = None):
+        """
+        Determine the image that provides complete coverage of target
+        location.
+
+        The composed image is merged from one or more image tiles that overlay
+        the target location and provide complete image coverage of the target
+        location.
+
+        Parameters
+        ----------
+        target_domain
+            A shapely polygon instance that specifies the target location requiring image
+            coverage.
+        target_z
+            The target zoom level (resolution) of the required images.
+        fill_value optional
+            Value or color filling the composed image at initialization. 
+            Accepts single value or array of values with a length equal to the 
+            tiles numer of channels (e.g, 4 for RGBA). Defaults to white.
+            Can be used to match plot background or hide the empty parts 
+            of the composed image using alpha channel.
+
+        Returns
+        -------
+        img, extent, origin
+            A tuple containing three items, consisting of the target
+            location :class:`numpy.ndarray` image data, the
+            (x-lower, x-upper, y-lower, y-upper) extent of the image, and the
+            origin for the target location.
+
+        """
         tiles = []
 
         def fetch_tile(tile):
@@ -122,7 +153,7 @@ class GoogleWTS(metaclass=ABCMeta):
                 except OSError:
                     pass
 
-        img, extent, origin = _merge_tiles(tiles)
+        img, extent, origin = _merge_tiles(tiles, fill_value)
         return img, extent, origin
 
     @property
@@ -808,7 +839,7 @@ class OrdnanceSurvey(GoogleWTS):
                f"{self.layer}/{z}/{x}/{y}.png?key={self.apikey}"
 
 
-def _merge_tiles(tiles):
+def _merge_tiles(tiles, fill_value = None):
     """Return a single image, merging the given images."""
     if not tiles:
         raise ValueError('A non-empty list of tiles should '
@@ -824,7 +855,8 @@ def _merge_tiles(tiles):
     ys = sorted(ys)
 
     other_len = tiles[0][0].shape[2:]
-    img = np.zeros((len(ys), len(xs)) + other_len, dtype=np.uint8) - 1
+    fill_value = fill_value if fill_value else np.full(other_len, 255)
+    img = np.full((len(ys), len(xs)) + other_len, fill_value=fill_value, dtype=np.uint8)
 
     for tile_img, x, y, origin in tiles:
         y_first, y_last = y[0], y[-1]

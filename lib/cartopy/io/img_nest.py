@@ -309,7 +309,7 @@ class NestedImageCollection:
             result = pbox.intersects(cbox) and not pbox.touches(cbox)
         return result
 
-    def image_for_domain(self, target_domain, target_z):
+    def image_for_domain(self, target_domain, target_z, fill_value=None):
         """
         Determine the image that provides complete coverage of target
         location.
@@ -328,6 +328,12 @@ class NestedImageCollection:
             The name of the target :class`~cartopy.io.img_nest.ImageCollection`
             which specifies the target zoom level (resolution) of the required
             images.
+        fill_value optional
+            Value or color filling the composed image at initialization. 
+            Accepts single value or array of values with a length equal to the 
+            tiles numer of channels (e.g, 4 for RGBA). Defaults to white.
+            Can be used to match plot background or hide the empty parts 
+            of the composed image using alpha channel.
 
         Returns
         -------
@@ -360,7 +366,7 @@ class NestedImageCollection:
             tiles.append([np.array(img), x, y, origin])
 
         from cartopy.io.img_tiles import _merge_tiles
-        img, extent, origin = _merge_tiles(tiles)
+        img, extent, origin = _merge_tiles(tiles, fill_value)
         return img, extent, origin
 
     def find_images(self, target_domain, target_z, start_tiles=None):
