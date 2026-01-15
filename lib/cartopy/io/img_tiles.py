@@ -825,6 +825,9 @@ def _merge_tiles(tiles):
 
     other_len = tiles[0][0].shape[2:]
     img = np.zeros((len(ys), len(xs)) + other_len, dtype=np.uint8) - 1
+    
+    if other_len[0] == 4: # If 4 channels, assumes image is RGBA and sets alpha to 0
+        img[:,:,3] = 0
 
     for tile_img, x, y, origin in tiles:
         y_first, y_last = y[0], y[-1]
