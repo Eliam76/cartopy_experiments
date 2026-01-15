@@ -855,8 +855,8 @@ def _merge_tiles(tiles, fill_value = None):
     ys = sorted(ys)
 
     other_len = tiles[0][0].shape[2:]
-    fill_value = fill_value if fill_value else np.full(other_len, 255)
-    img = np.full((len(ys), len(xs)) + other_len, fill_value=fill_value, dtype=np.uint8)
+    fill_val = fill_value if fill_value else np.full(other_len, 255)
+    img = np.full((len(ys), len(xs)) + other_len, fill_value=fill_val, dtype=np.uint8)
 
     for tile_img, x, y, origin in tiles:
         y_first, y_last = y[0], y[-1]
